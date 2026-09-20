@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Making custom builds easier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="page">
+  <div class="hero">
+    <h1 class="site-title" data-text="The Palette">The Palette</h1>
+    <p class="site-tagline">Just so your custom builds suck less :b<sup>&trade;</sup></p>
+  </div>
+
+  <div class="dataset-bar" id="datasetBar">
+    <div class="dataset-status" id="datasetStatus"></div>
+    <label class="file-btn">
+      Load Texture Pack JSON
+      <input type="file" id="fileInput" accept="application/json,.json">
+    </label>
+    <button class="reset-link" id="resetLink">Try sample data instead</button>
+    <div class="dataset-error" id="datasetError" style="display:none;"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="gradient">Gradient</button>
+    <button class="tab-btn" data-tab="texture">Texture match</button>
+    <button class="tab-btn" data-tab="browse">Browse</button>
+    <button class="tab-btn" data-tab="about">About</button>
+  </div>
+
+  <section id="panel-gradient" class="panel active">
+    <div class="controls-row">
+      <div class="field">
+        <label for="gradA">From</label>
+        <div class="combo" id="gradACombo">
+          <input type="text" id="gradA" class="combo-input" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" placeholder="Search blocks…">
+          <div class="combo-list" id="gradAList" role="listbox"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="gradB">To</label>
+        <div class="combo" id="gradBCombo">
+          <input type="text" id="gradB" class="combo-input" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" placeholder="Search blocks…">
+          <div class="combo-list" id="gradBList" role="listbox"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="gradSteps">Steps</label>
+        <div class="steps-field">
+          <input type="range" id="gradSteps" min="10" max="15" value="10">
+          <span class="steps-value" id="gradStepsValue">10</span>
+        </div>
+      </div>
+      <label class="checkbox-field">
+        <input type="checkbox" class="complementary-toggle" onchange="setIncludeComplementary(this.checked)">
+        Show complementary suggestions (fences, trapdoors, bars, vines…)
+      </label>
+    </div>
+    <div class="output-layout">
+      <div class="strip-wrap"><div class="strip" id="gradOutput"></div></div>
+      <div class="companion-panel" id="gradCompanion" style="display:none;"></div>
+    </div>
+    <p class="note" id="gradNote"></p>
+  </section>
+
+  <section id="panel-texture" class="panel">
+    <div class="controls-row">
+      <div class="field">
+        <label for="texBlock">Block</label>
+        <div class="combo" id="texBlockCombo">
+          <input type="text" id="texBlock" class="combo-input" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" placeholder="Search blocks…">
+          <div class="combo-list" id="texBlockList" role="listbox"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Mode</label>
+        <div class="segmented">
+          <button class="active" data-mode="harmony">Harmony</button>
+          <button data-mode="accent">Accent</button>
+        </div>
+      </div>
+      <label class="checkbox-field">
+        <input type="checkbox" class="complementary-toggle" onchange="setIncludeComplementary(this.checked)">
+        Show complementary suggestions (fences, trapdoors, bars, vines…)
+      </label>
+    </div>
+    <p class="mode-note" id="texModeNote"></p>
+    <div class="output-layout">
+      <div class="grid" id="texOutput"></div>
+      <div class="companion-panel" id="texCompanion" style="display:none;"></div>
+    </div>
+  </section>
+
+  <section id="panel-browse" class="panel">
+    <div class="controls-row">
+      <div class="field"><label for="browseFilter">Filter by name</label><input type="text" id="browseFilter" placeholder="e.g. oak, wool, stone"></div>
+      <div class="field">
+        <label for="browseScope">Show</label>
+        <select id="browseScope">
+          <option value="cube">Full blocks only</option>
+          <option value="searchable" selected>Full blocks + complementary</option>
+          <option value="all">Everything (incl. functional/other)</option>
+        </select>
+      </div>
+    </div>
+    <p class="browse-count" id="browseCount"></p>
+    <div class="grid" id="browseOutput"></div>
+    <div class="pagination" id="browsePagination" style="display:none;">
+      <button id="browsePrev" aria-label="Previous page">← Prev</button>
+      <span id="browsePageLabel"></span>
+      <button id="browseNext" aria-label="Next page">Next →</button>
+    </div>
+  </section>
+
+  <section id="panel-about" class="panel about-panel">
+    <div class="about-block">
+      <h2>So, what is this?</h2>
+      <p>This is a small toolkit for a specific building problem: with hundreds of blocks to choose from, which ones actually go together? Give it two blocks and it walks a smooth path of real materials between them. Give it one block and it suggests others worth pairing with it — either to blend in, or to stand out on purpose.</p>
+      <p>Everything here runs on one idea: convert a block's color into Lab space which is built so that mathematical distance actually tracks how different two colors <em>look</em> to a human eye, not just how different their raw numbers are — then measure that distance with a formula called CIEDE2000. It looks like this:</p>
+      <code>ΔE₀₀ = √[ (ΔL′/kLSL)² + (ΔC′/kCSC)² + (ΔH′/kHSH)² + RT · (ΔC′/kCSC) · (ΔH′/kHSH) ]</code>
+      <p>You don't need to follow every symbol. In plain terms: it separately measures how far apart two colors are in lightness, colorfulness, and hue; it weighs each difference by how sensitive human eyes actually are to it in that part of the spectrum, and folds the three into one number. A ΔE00 of 0 is identical colors; around 1–2 is barely noticeable; past 10 or so, it's obvious at a glance. Every "closest match" this tool ever makes is really just: find whichever real block has the smallest ΔE00 from wherever you're aiming.</p>
+      <p>Three things you can ask it:</p>
+      <ul>
+        <li><strong>Gradient</strong> — pick two blocks, get a chain of real materials that steps smoothly from one to the other.</li>
+        <li><strong>Harmony</strong> — the Texture match mode that looks for blocks that <em>blend in</em>: close in both color and surface.</li>
+        <li><strong>Accent</strong> — the other mode: same general color family, the purpose is if you want this specific color to stand out.</li>
+      </ul>
+    </div>
+    <div class="about-block">
+      <h2>Color spread</h2>
+      <p>A block's average color doesn't always tell the whole story. Take an ore block: it's mostly plain stone, with a handful of bright flecks of something (i.e., gold, redstone, whatever) scattered across it. Average all of that together and you get some unremarkable warm gray, which can genuinely be the closest color in an otherwise smooth gradient. But the block itself doesn't read as a smooth, uniform material — it reads as gray stone with bright dots on it. Left unchecked, that can make a gradient or a harmony match suddenly detour through something speckled and out of place.</p>
+      <p>"Spread" is what catches this: a number for how much a block's own colors disagree with each other. A high spread means the average is hiding a high-contrast mix; a low spread means the block is genuinely one consistent color. Gradient and Harmony quietly favor low-spread blocks when a good uniform option is nearby — and if a high-spread block is still the closest match, it shows up labeled "mixed/speckled surface," so you know why. Accent leaves spread alone entirely, since a busier, higher-contrast surface can be exactly what makes a good accent block.</p>
+    </div>
+  </section>
+
+  <footer class="site-footer">© 2026 Block Matching Engine. Built by @NormanVGC.</footer>
+</div>
+
+<script src="color-math.js"></script>
+<script src="matching-engine.js"></script>
+<script src="dataset.js"></script>
+<script src="combobox.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
