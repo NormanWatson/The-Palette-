@@ -64,7 +64,6 @@ const wheelHarmonySelect = document.getElementById('wheelHarmony');
 const wheelOutputEl = document.getElementById('wheelOutput');
 const wheelCompanionEl = document.getElementById('wheelCompanion');
 const wheelModeNoteEl = document.getElementById('wheelModeNote');
-const wheelNoteEl = document.getElementById('wheelNote');
 
 // ---- wheel state ----
 // Dragging the anchor or a harmony-point handle overrides the "pure" scheme
@@ -262,9 +261,6 @@ function renderColorWheel() {
     wheelOutputEl.innerHTML = '';
     wheelCompanionEl.style.display = 'none';
     wheelModeNoteEl.textContent = '';
-    wheelNoteEl.textContent = dataset.length === 0
-      ? 'Load a dataset above (or try the sample data) to build a color-wheel harmony.'
-      : '';
     lastAnchorLch = null;
     renderWheelVisual(null, [], wheelHarmonySelect.value);
     return;
@@ -316,10 +312,6 @@ function renderColorWheel() {
       wheelOutputEl.appendChild(chip);
     });
   });
-
-  wheelNoteEl.textContent = matches.length
-    ? `Showing up to ${perPoint} per point, closest first.`
-    : 'Nothing left in the dataset to suggest — try a smaller-cast dataset or a different anchor.';
 
   const chainLike = [{ block: blockA }, ...matches.map(m => ({ block: m.block }))];
   const companions = findComplementaryCompanions(chainLike, complementaryBlocks(), COMPANION_THRESHOLD.harmony, 5);
