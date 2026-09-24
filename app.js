@@ -104,6 +104,11 @@ const modeNotes = {
 const gradACombo = createCombobox(document.getElementById('gradA'), document.getElementById('gradAList'), () => renderGradient());
 const gradBCombo = createCombobox(document.getElementById('gradB'), document.getElementById('gradBList'), () => renderGradient());
 const texBlockCombo = createCombobox(document.getElementById('texBlock'), document.getElementById('texBlockList'), () => renderTexture());
+const wheelBlockCombo = createCombobox(document.getElementById('wheelBlock'), document.getElementById('wheelBlockList'), () => {
+  // colorwheel.js defines this; it resets any hand-dragged wheel overrides
+  // (a fresh combo pick should always win over a previous drag) then renders.
+  if (typeof wheelAnchorChanged === 'function') wheelAnchorChanged();
+});
 
 const SPREAD_NOTE_THRESHOLD = 8;
 function spreadNote(block) {
@@ -234,7 +239,10 @@ function renderBrowse(resetPage) {
   }
 }
 
-function renderAll() { renderGradient(); renderTexture(); renderBrowse(); }
+function renderAll() {
+  renderGradient(); renderTexture(); renderBrowse();
+  if (typeof renderColorWheel === 'function') renderColorWheel();
+}
 
 let includeComplementary = false;
 function searchableBlocks() { return dataset.filter(b => b.shape === 'cube'); }
@@ -252,6 +260,7 @@ function refreshSelectsForNewDataset() {
   gradACombo.setOptions(opts, cubes[0] && cubes[0].id);
   gradBCombo.setOptions(opts, secondId);
   texBlockCombo.setOptions(opts, cubes[0] && cubes[0].id);
+  wheelBlockCombo.setOptions(opts, cubes[0] && cubes[0].id);
 }
 
 function setDataset(newDataset, label) {
@@ -278,7 +287,7 @@ document.querySelectorAll('.segmented button').forEach(btn => {
   });
 });
 
-const TAB_ORDER = ['gradient', 'texture', 'browse', 'about'];
+const TAB_ORDER = ['gradient', 'wheel', 'texture', 'browse', 'about'];
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const currentBtn = document.querySelector('.tab-btn.active');

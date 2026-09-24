@@ -28,6 +28,7 @@
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="gradient">Gradient</button>
+    <button class="tab-btn" data-tab="wheel">Color wheel</button>
     <button class="tab-btn" data-tab="texture">Texture match</button>
     <button class="tab-btn" data-tab="browse">Browse</button>
     <button class="tab-btn" data-tab="about">About</button>
@@ -66,6 +67,48 @@
       <div class="companion-panel" id="gradCompanion" style="display:none;"></div>
     </div>
     <p class="note" id="gradNote"></p>
+  </section>
+
+  <section id="panel-wheel" class="panel">
+    <div class="controls-row">
+      <div class="field">
+        <label for="wheelBlock">Anchor block</label>
+        <div class="combo" id="wheelBlockCombo">
+          <input type="text" id="wheelBlock" class="combo-input" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" placeholder="Search blocks…">
+          <div class="combo-list" id="wheelBlockList" role="listbox"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="wheelHarmony">Harmony</label>
+        <select id="wheelHarmony">
+          <option value="complementary" selected>Complementary</option>
+          <option value="splitComplementary">Split-complementary</option>
+          <option value="analogous">Analogous</option>
+          <option value="triadic">Triadic</option>
+          <option value="tetradic">Tetradic (square)</option>
+          <option value="monochromatic">Monochromatic</option>
+        </select>
+      </div>
+      <label class="checkbox-field">
+        <input type="checkbox" class="complementary-toggle" onchange="setIncludeComplementary(this.checked)">
+        Show complementary suggestions (fences, trapdoors, bars, vines…)
+      </label>
+    </div>
+    <p class="mode-note" id="wheelModeNote"></p>
+    <div class="wheel-layout">
+      <div class="wheel-stage">
+        <div class="color-wheel" id="colorWheel">
+          <div class="wheel-ring" aria-hidden="true"></div>
+          <div class="wheel-center" id="wheelCenter"></div>
+        </div>
+        <p class="wheel-hint">Drag the ring dots to fine-tune. Rings snap back to exact angles when the anchor or harmony changes.</p>
+      </div>
+      <div class="output-layout">
+        <div class="grid" id="wheelOutput"></div>
+        <div class="companion-panel" id="wheelCompanion" style="display:none;"></div>
+      </div>
+    </div>
+    <p class="note" id="wheelNote"></p>
   </section>
 
   <section id="panel-texture" class="panel">
@@ -124,9 +167,10 @@
       <p>Everything here runs on one idea: convert a block's color into Lab space which is built so that mathematical distance actually tracks how different two colors <em>look</em> to a human eye, not just how different their raw numbers are — then measure that distance with a formula called CIEDE2000. It looks like this:</p>
       <code>ΔE₀₀ = √[ (ΔL′/kLSL)² + (ΔC′/kCSC)² + (ΔH′/kHSH)² + RT · (ΔC′/kCSC) · (ΔH′/kHSH) ]</code>
       <p>You don't need to follow every symbol. In plain terms: it separately measures how far apart two colors are in lightness, colorfulness, and hue; it weighs each difference by how sensitive human eyes actually are to it in that part of the spectrum, and folds the three into one number. A ΔE00 of 0 is identical colors; around 1–2 is barely noticeable; past 10 or so, it's obvious at a glance. Every "closest match" this tool ever makes is really just: find whichever real block has the smallest ΔE00 from wherever you're aiming.</p>
-      <p>Three things you can ask it:</p>
+      <p>Four things you can ask it:</p>
       <ul>
         <li><strong>Gradient</strong> — pick two blocks, get a chain of real materials that steps smoothly from one to the other.</li>
+        <li><strong>Color wheel</strong> — pick one anchor block and a harmony (complementary, split-complementary, analogous, triadic, tetradic, or monochromatic), and it surfaces a ranked handful of real blocks near each point the harmony calls for, closest first. Drag any point around the ring to explore other angles live, or drag the anchor itself to test a hue against a block you haven't loaded.</li>
         <li><strong>Harmony</strong> — the Texture match mode that looks for blocks that <em>blend in</em>: close in both color and surface.</li>
         <li><strong>Accent</strong> — the other mode: same general color family, the purpose is if you want this specific color to stand out.</li>
       </ul>
@@ -134,7 +178,7 @@
     <div class="about-block">
       <h2>Color spread</h2>
       <p>A block's average color doesn't always tell the whole story. Take an ore block: it's mostly plain stone, with a handful of bright flecks of something (i.e., gold, redstone, whatever) scattered across it. Average all of that together and you get some unremarkable warm gray, which can genuinely be the closest color in an otherwise smooth gradient. But the block itself doesn't read as a smooth, uniform material — it reads as gray stone with bright dots on it. Left unchecked, that can make a gradient or a harmony match suddenly detour through something speckled and out of place.</p>
-      <p>"Spread" is what catches this: a number for how much a block's own colors disagree with each other. A high spread means the average is hiding a high-contrast mix; a low spread means the block is genuinely one consistent color. Gradient and Harmony quietly favor low-spread blocks when a good uniform option is nearby — and if a high-spread block is still the closest match, it shows up labeled "mixed/speckled surface," so you know why. Accent leaves spread alone entirely, since a busier, higher-contrast surface can be exactly what makes a good accent block.</p>
+      <p>"Spread" is what catches this: a number for how much a block's own colors disagree with each other. A high spread means the average is hiding a high-contrast mix; a low spread means the block is genuinely one consistent color. Gradient, Color wheel, and Harmony quietly favor low-spread blocks when a good uniform option is nearby — and if a high-spread block is still the closest match, it shows up labeled "mixed/speckled surface," so you know why. Accent leaves spread alone entirely, since a busier, higher-contrast surface can be exactly what makes a good accent block.</p>
     </div>
   </section>
 
@@ -146,5 +190,6 @@
 <script src="dataset.js"></script>
 <script src="combobox.js"></script>
 <script src="app.js"></script>
+<script src="colorwheel.js"></script>
 </body>
 </html>
